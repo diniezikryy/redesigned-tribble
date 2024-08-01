@@ -1,36 +1,72 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Node.js
+node_modules/
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
-.yarn/install-state.gz
-
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
+# Logs
+logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
-# local env files
-.env*.local
+# Dependency directories
+jspm_packages/
 
-# vercel
-.vercel
+# Next.js
+.next/
+out/
+# Tailwind CSS
+tailwind.config.js
 
-# typescript
+# Production
+build/
+dist/
+
+# Testing
+coverage/
+
+# Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# WebStorm
+.idea/
+
+# VS Code
+.vscode/
+
+# Optional npm cache directory
+.npm
+
+# Miscellaneous
+.DS_Store
+*.swp
+*~
+
+# TypeScript
 *.tsbuildinfo
-next-env.d.ts
+
+# Ignore public directory files
+public/**/*.map
+
+# Ignore MacOS specific files
+.DS_Store
+
+# Ignore various IDE directories and files
+.vscode/
+.idea/
+
+# Ignore type definitions
+types/
+
+# Next.js build output
+.next/
+out/
+
+# Ignore lock files
+package-lock.json
+yarn.lock
+.pnpm-lock.yaml
