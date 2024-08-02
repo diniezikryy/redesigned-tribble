@@ -1,36 +1,49 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export const login = async (username: string, password: string): Promise<void> => {
+export const login = async (username: string, password: string) => {
     const response = await fetch(`${API_URL}/users/token/`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
+        credentials: 'include',
         body: JSON.stringify({username, password}),
     });
 
     if (!response.ok) {
-        throw new Error("Login failed")
+        throw new Error("Login failed");
     }
 
-    return response.json();
+    const data = await response.json();
+    return {user: {username}, accessToken: data.access};
+};
+
+export const refreshToken = async () => {
+    const response = await fetch(`${API_URL}/users/token/refresh/`, {
+        method: "POST",
+        credentials: 'include',
+    });
+
+    if (!response.ok) {
+        throw new Error("Token refresh failed");
+    }
+
+    const data = await response.json();
+    return {username: data.username, accessToken: data.access};
 };
 
 export const fetchQuizzes = async (token: string) => {
-  // console.log(`Fetching Quizzes with token: ${token}`);
-  const response = await fetch(`${API_URL}/quizzes/`, {
-    method: "GET",
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
+    const response = await fetch(`${API_URL}/quizzes/`, {
+        method: "GET",
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+    });
 
-  if (!response.ok) {
-    throw new Error('Failed to fetch quizzes');
-  }
+    if (!response.ok) {
+        throw new Error('Failed to fetch quizzes');
+    }
 
-  const data = await response.json();
-  // console.log("Received data from server:", data);
-  return data;
+    return response.json();
 };

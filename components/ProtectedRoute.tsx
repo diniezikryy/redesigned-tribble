@@ -1,24 +1,22 @@
 'use client';
 
-import {useEffect, useState} from 'react';
-import {useRouter} from 'next/navigation';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Props {
     children: React.ReactNode;
 }
 
-const ProtectedRoute: React.FC<Props> = ({children}) => {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+const ProtectedRoute: React.FC<Props> = ({ children }) => {
     const router = useRouter();
+    const { isAuthenticated } = useAuth();
 
     useEffect(() => {
-        const access = localStorage.getItem('access');
-        if (!access) {
+        if (!isAuthenticated) {
             router.push('/login');
-        } else {
-            setIsAuthenticated(true);
         }
-    }, [router]);
+    }, [isAuthenticated, router]);
 
     if (!isAuthenticated) {
         return null;

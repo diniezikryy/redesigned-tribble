@@ -1,24 +1,25 @@
 'use client'
 
-import {useState} from "react";
-import {useRouter} from "next/navigation";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import LoginForm from "../../components/LoginForm"
-import {login} from "../../lib/api"
-import {LoginForm as LoginFormType} from "../../types"
+import { login } from "@/lib/api"
+import { LoginForm as LoginFormType } from "../../types"
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginPage() {
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
+    const { login: authLogin } = useAuth();
 
     const handleSubmit = async (data: LoginFormType) => {
         try {
-            const response = await login(data.username, data.password)
-            // Store the token in localstorage
-            localStorage.setItem("refresh_token", response.refresh)
-            localStorage.setItem("access_token", response.access);
-            router.push("/dashboard")
+            const { user, accessToken } = await login(data.username, data.password);
+            authLogin(user, accessToken);
+            router.push("/dashboard");
         } catch (error) {
-            setError("Invalid Credentials")
+            console.error('Login error:', error);
+            setError("Invalid Credentials");
         }
     }
 
@@ -30,4 +31,3 @@ export default function LoginPage() {
         </div>
     )
 }
-

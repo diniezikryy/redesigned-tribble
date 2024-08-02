@@ -2,7 +2,7 @@ import React from 'react';
 import {useForm} from 'react-hook-form';
 import {yupResolver} from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import {LoginForm} from '../types';
+import type {LoginForm} from '@/types';
 
 const schema = yup.object().shape({
     username: yup.string().required('Username is required'),

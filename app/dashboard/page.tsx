@@ -2,7 +2,9 @@
 
 import {useEffect, useState} from 'react'
 import {useRouter} from 'next/navigation'
-import {fetchQuizzes} from '../../lib/api'
+import {fetchQuizzes} from '@/lib/api'
+import {useAuth} from '@/contexts/AuthContext'
+import ProtectedRoute from '@/components/ProtectedRoute'
 
 interface Answer {
     id: number;
@@ -27,19 +29,23 @@ interface Quiz {
     questions: Question[];
 }
 
-export default function DashboardPage() {
+function Dashboard() {
     const [quizzes, setQuizzes] = useState<Quiz[] | null>(null)
     const router = useRouter()
+    const {isAuthenticated, getAccessToken} = useAuth()
 
     useEffect(() => {
         const fetchData = async () => {
-            const access = localStorage.getItem('access_token')
-            if (!access) {
+            if (!isAuthenticated) {
                 router.push('/login')
                 return
             }
             try {
-                const result = await fetchQuizzes(access)
+                const token = getAccessToken()
+                if (!token) {
+                    throw new Error('No access token available')
+                }
+                const result = await fetchQuizzes(token)
                 setQuizzes(result)
             } catch (error) {
                 console.error('Failed to fetch quizzes', error)
@@ -48,7 +54,7 @@ export default function DashboardPage() {
         }
 
         fetchData()
-    }, [router])
+    }, [isAuthenticated, router, getAccessToken])
 
     if (!quizzes) {
         return <p>Loading...</p>
@@ -79,5 +85,13 @@ export default function DashboardPage() {
                 </div>
             ))}
         </div>
+    )
+}
+
+export default function DashboardPage() {
+    return (
+        <ProtectedRoute>
+            <Dashboard/>
+        </ProtectedRoute>
     )
 }
