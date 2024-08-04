@@ -1,14 +1,10 @@
-'use client';
+'use client'
 
-import {useEffect, useState} from 'react';
-import {useRouter} from 'next/navigation';
-import {checkAuth} from '@/lib/api';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { checkAuth } from '../lib/api';
 
-interface Props {
-    children: React.ReactNode;
-}
-
-const ProtectedRoute: React.FC<Props> = ({children}) => {
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const router = useRouter();
 
@@ -21,6 +17,7 @@ const ProtectedRoute: React.FC<Props> = ({children}) => {
                     router.push('/login');
                 }
             } catch (error) {
+                console.error('Auth verification failed:', error);
                 router.push('/login');
             }
         };

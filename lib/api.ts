@@ -29,20 +29,19 @@ export const logout = async () => {
 export const refreshToken = async (): Promise<void> => {
     const response = await fetch(`${API_URL}/users/token/refresh/`, {
         method: "POST",
-        credentials: 'include', // This is important for including cookies
+        credentials: 'include', // This is crucial for including cookies
     });
 
     if (!response.ok) {
-        throw new Error("Token refresh failed");
+        const errorData = await response.json();
+        console.error("Token refresh failed", errorData);
+        throw new Error(errorData.detail || "Token refresh failed");
     }
 };
 
 export const checkAuth = async (): Promise<boolean> => {
     try {
-        const response = await fetch(`${API_URL}/users/auth-check/`, {
-            method: 'GET',
-            credentials: 'include',
-        });
+        const response = await fetchWithAuth(`${API_URL}/users/auth-check/`);
         return response.ok;
     } catch (error) {
         console.error('Auth check failed:', error);
@@ -50,20 +49,36 @@ export const checkAuth = async (): Promise<boolean> => {
     }
 };
 
-export const fetchQuizzes = async () => {
-    // console.log(`Fetching Quizzes with token: ${token}`);
-    const response = await fetch(`${API_URL}/quizzes/`, {
-        method: "GET",
-        headers: {
-            'Content-Type': 'application/json',
-        },
+export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
+    let response = await fetch(url, {
+        ...options,
         credentials: 'include',
     });
 
+    if (response.status === 401) {
+        // Token is expired, try to refresh
+        try {
+            await refreshToken();
+            // Retry the original request
+            response = await fetch(url, {
+                ...options,
+                credentials: 'include',
+            });
+        } catch (error) {
+            // Refresh failed, redirect to login
+            window.location.href = '/login';
+            throw error;
+        }
+    }
+
+    return response;
+};
+
+export const fetchQuizzes = async () => {
+    const response = await fetchWithAuth(`${API_URL}/quizzes/`);
     if (!response.ok) {
         throw new Error('Failed to fetch quizzes');
     }
-
     return response.json();
 };
 
