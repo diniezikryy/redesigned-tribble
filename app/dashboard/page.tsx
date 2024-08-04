@@ -2,7 +2,8 @@
 
 import {useEffect, useState} from 'react'
 import {useRouter} from 'next/navigation'
-import {fetchQuizzes} from '../../lib/api'
+import {fetchQuizzes, logout} from '@/lib/api'
+import withAuth from "@/components/hoc/withAuth";
 
 interface Answer {
     id: number;
@@ -27,19 +28,14 @@ interface Quiz {
     questions: Question[];
 }
 
-export default function DashboardPage() {
+function DashboardPage() {
     const [quizzes, setQuizzes] = useState<Quiz[] | null>(null)
     const router = useRouter()
 
     useEffect(() => {
         const fetchData = async () => {
-            const access = localStorage.getItem('access_token')
-            if (!access) {
-                router.push('/login')
-                return
-            }
             try {
-                const result = await fetchQuizzes(access)
+                const result = await fetchQuizzes()
                 setQuizzes(result)
             } catch (error) {
                 console.error('Failed to fetch quizzes', error)
@@ -50,6 +46,15 @@ export default function DashboardPage() {
         fetchData()
     }, [router])
 
+    const handleLogout = async () => {
+        try {
+            await logout()
+            router.push('/login')
+        } catch (error) {
+            console.error('Logout failed', error)
+        }
+    }
+
     if (!quizzes) {
         return <p>Loading...</p>
     }
@@ -57,6 +62,7 @@ export default function DashboardPage() {
     return (
         <div>
             <h1>Dashboard</h1>
+            <button onClick={handleLogout}>Logout</button>
             {quizzes.map((quiz) => (
                 <div key={quiz.id} style={{marginBottom: '20px', padding: '10px', border: '1px solid #ccc'}}>
                     <h2>{quiz.title}</h2>
@@ -81,3 +87,5 @@ export default function DashboardPage() {
         </div>
     )
 }
+
+export default withAuth(DashboardPage);
