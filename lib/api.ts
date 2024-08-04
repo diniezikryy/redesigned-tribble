@@ -1,3 +1,5 @@
+import {AuthData} from "@/types";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const login = async (username: string, password: string): Promise<void> => {
@@ -39,10 +41,10 @@ export const refreshToken = async (): Promise<void> => {
     }
 };
 
-export const checkAuth = async (): Promise<boolean> => {
+export const checkAuth = async (): Promise<AuthData> => {
     try {
         const response = await fetchWithAuth(`${API_URL}/users/auth-check/`);
-        return response.ok;
+        return response.json();
     } catch (error) {
         console.error('Auth check failed:', error);
         return false;

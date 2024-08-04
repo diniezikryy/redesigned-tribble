@@ -1,6 +1,6 @@
 import {useEffect} from 'react';
 import {useRouter} from 'next/navigation';
-import ProtectedRoute from '../ProtectedRoute';
+import ProtectedRoute from './ProtectedRoute';
 
 const withAuth = (WrappedComponent: React.ComponentType) => {
     return (props: any) => {
