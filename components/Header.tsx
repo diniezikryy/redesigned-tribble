@@ -16,13 +16,13 @@ const Header = () => {
     return (
         <header style={{
             padding: '1rem',
-            backgroundColor: '#f0f0f0',
+            backgroundColor: 'green',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center'
         }}>
             <Link href="/">
-                <h1 style={{margin: 0}}>Your App Name</h1>
+                <h1 style={{margin: 0}}>quiz-rizz</h1>
             </Link>
             <div>
                 {isAuthenticated && user ? (
