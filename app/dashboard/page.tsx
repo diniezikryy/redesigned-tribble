@@ -4,28 +4,14 @@ import {useEffect, useState} from 'react'
 import {useRouter} from 'next/navigation'
 import {fetchQuizzes, logout} from '@/lib/api'
 import withAuth from "@/components/hoc/withAuth";
-
-interface Answer {
-    id: number;
-    text: string;
-    is_correct: boolean;
-}
-
-interface Question {
-    id: number;
-    quiz: number;
-    text: string;
-    question_type: string;
-    difficulty: number;
-    answers: Answer[];
-}
+import Link from 'next/link';
+import {QuizCard} from "@/components/QuizCard";
 
 interface Quiz {
     id: number;
     title: string;
     num_questions: number;
     time_limit: number;
-    questions: Question[];
 }
 
 function DashboardPage() {
@@ -60,30 +46,20 @@ function DashboardPage() {
     }
 
     return (
-        <div>
-            <h1>Dashboard</h1>
-            <button onClick={handleLogout}>Logout</button>
-            {quizzes.map((quiz) => (
-                <div key={quiz.id} style={{marginBottom: '20px', padding: '10px', border: '1px solid #ccc'}}>
-                    <h2>{quiz.title}</h2>
-                    <p>Number of Questions: {quiz.num_questions}</p>
-                    <p>Time Limit: {quiz.time_limit} minutes</p>
-                    {quiz.questions.map((question) => (
-                        <div key={question.id} style={{marginBottom: '10px'}}>
-                            <h3>{question.text}</h3>
-                            <p>Type: {question.question_type}</p>
-                            <p>Difficulty: {question.difficulty}</p>
-                            <ul>
-                                {question.answers.map((answer) => (
-                                    <li key={answer.id} style={{color: answer.is_correct ? 'green' : 'red'}}>
-                                        {answer.text}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    ))}
+        <div className="container mx-auto p-4">
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold">Dashboard</h1>
+                <div>
+                    <Link href="/create-quiz" className="bg-green-500 text-white px-4 py-2 rounded mr-2">
+                        Create Quiz
+                    </Link>
                 </div>
-            ))}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {quizzes.map((quiz) => (
+                    <QuizCard key={quiz.id} quiz={quiz}/>
+                ))}
+            </div>
         </div>
     )
 }

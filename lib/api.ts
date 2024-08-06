@@ -84,3 +84,16 @@ export const fetchQuizzes = async () => {
     return response.json();
 };
 
+export const fetchQuizDetails = async (quizId: string) => {
+    try {
+        const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch quiz details');
+        }
+        return response.json();
+    } catch (error) {
+        console.error('Error fetching quiz details:', error);
+        throw error;
+    }
+}
+
