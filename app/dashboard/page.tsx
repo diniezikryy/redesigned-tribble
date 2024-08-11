@@ -5,7 +5,9 @@ import {useRouter} from 'next/navigation'
 import {fetchQuizzes} from '@/lib/api'
 import withAuth from "@/components/hoc/withAuth"
 import {CreateQuizDialog} from "@/components/CreateQuizDialog"  // Import the new component
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card"
+import {Button} from "@/components/ui/button";
+import Link from "next/link";
 
 interface Quiz {
     id: number;
@@ -50,8 +52,10 @@ function DashboardPage() {
 
     return (
         <div className="container mx-auto p-4">
-            <div className="flex items-center">
-                <CreateQuizDialog onQuizCreated={handleQuizCreated}/>
+            <div className="flex">
+                <div className={`ml-auto`}>
+                    <CreateQuizDialog onQuizCreated={handleQuizCreated}/>
+                </div>
             </div>
 
             <div className="mt-4">
@@ -68,6 +72,11 @@ function DashboardPage() {
                                         Created at: {new Date(quiz.created_at).toLocaleDateString()}
                                     </CardDescription>
                                 </CardContent>
+                                <CardFooter>
+                                    <Button asChild>
+                                        <Link href={`/quizzes/${quiz.id}`} passHref>View Quiz</Link>
+                                    </Button>
+                                </CardFooter>
                             </Card>
                         ))}
                     </ul>

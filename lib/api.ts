@@ -105,3 +105,17 @@ export const createQuiz = async (quizData: { title: string; description: string 
     return response.json();
 }
 
+export const fetchQuiz = async (quizId: string): Promise<Quiz> => {
+    const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to fetch quiz');
+    }
+    return response.json();
+}
+
