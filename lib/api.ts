@@ -2,6 +2,13 @@ import {AuthData} from "@/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+export interface Quiz {
+    id: number;
+    title: string;
+    description: string;
+    created_at: string;
+}
+
 export const login = async (username: string, password: string): Promise<void> => {
     const response = await fetch(`${API_URL}/users/token/`, {
         method: "POST",
@@ -13,8 +20,11 @@ export const login = async (username: string, password: string): Promise<void> =
     });
 
     if (!response.ok) {
-        throw new Error("Login failed")
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Login failed");
     }
+
+    return response.json();
 };
 
 export const logout = async () => {
@@ -42,13 +52,11 @@ export const refreshToken = async (): Promise<void> => {
 };
 
 export const checkAuth = async (): Promise<AuthData> => {
-    try {
-        const response = await fetchWithAuth(`${API_URL}/users/auth-check/`);
-        return response.json();
-    } catch (error) {
-        console.error('Auth check failed:', error);
-        return false;
+    const response = await fetchWithAuth(`${API_URL}/users/auth-check/`);
+    if (!response.ok) {
+        throw new Error("Auth check failed");
     }
+    return response.json()
 };
 
 export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
@@ -67,9 +75,7 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
                 credentials: 'include',
             });
         } catch (error) {
-            // Refresh failed, redirect to login
-            window.location.href = '/login';
-            throw error;
+            throw new Error("Auth failed");
         }
     }
 
@@ -84,16 +90,18 @@ export const fetchQuizzes = async () => {
     return response.json();
 };
 
-export const fetchQuizDetails = async (quizId: string) => {
-    try {
-        const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/`);
-        if (!response.ok) {
-            throw new Error('Failed to fetch quiz details');
-        }
-        return response.json();
-    } catch (error) {
-        console.error('Error fetching quiz details:', error);
-        throw error;
+export const createQuiz = async (quizData: { title: string; description: string }): Promise<Quiz> => {
+    const response = await fetchWithAuth(`${API_URL}/quizzes/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(quizData),
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to create quiz');
     }
+    return response.json();
 }
 

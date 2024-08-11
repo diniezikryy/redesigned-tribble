@@ -2,63 +2,78 @@
 
 import {useEffect, useState} from 'react'
 import {useRouter} from 'next/navigation'
-import {fetchQuizzes, logout} from '@/lib/api'
-import withAuth from "@/components/hoc/withAuth";
-import Link from 'next/link';
-import {QuizCard} from "@/components/QuizCard";
+import {fetchQuizzes} from '@/lib/api'
+import withAuth from "@/components/hoc/withAuth"
+import {CreateQuizDialog} from "@/components/CreateQuizDialog"  // Import the new component
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
 
 interface Quiz {
     id: number;
     title: string;
-    num_questions: number;
-    time_limit: number;
+    description: string;
+    created_at: string;
 }
 
 function DashboardPage() {
     const [quizzes, setQuizzes] = useState<Quiz[] | null>(null)
+    const [loading, setLoading] = useState<boolean>(true)
+    const [error, setError] = useState<string | null>(null)
     const router = useRouter()
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const result = await fetchQuizzes()
-                setQuizzes(result)
-            } catch (error) {
-                console.error('Failed to fetch quizzes', error)
-                router.push('/login')
-            }
-        }
-
-        fetchData()
-    }, [router])
-
-    const handleLogout = async () => {
+    const fetchQuizzesData = async () => {
         try {
-            await logout()
-            router.push('/login')
+            const result = await fetchQuizzes()
+            setQuizzes(result)
         } catch (error) {
-            console.error('Logout failed', error)
+            console.error('Failed to fetch quizzes', error)
+            setError('Failed to fetch quizzes. Please try again.')
+        } finally {
+            setLoading(false)
         }
     }
 
-    if (!quizzes) {
+    useEffect(() => {
+        fetchQuizzesData()
+    }, [])
+
+    const handleQuizCreated = () => {
+        fetchQuizzesData()  // Refetch quizzes after a new one is created
+    }
+
+    if (loading) {
         return <p>Loading...</p>
+    }
+
+    if (error) {
+        return <p className="text-red-500">{error}</p>
     }
 
     return (
         <div className="container mx-auto p-4">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">Dashboard</h1>
-                <div>
-                    <Link href="/create-quiz" className="bg-green-500 text-white px-4 py-2 rounded mr-2">
-                        Create Quiz
-                    </Link>
-                </div>
+            <div className="flex items-center">
+                <CreateQuizDialog onQuizCreated={handleQuizCreated}/>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {quizzes.map((quiz) => (
-                    <QuizCard key={quiz.id} quiz={quiz}/>
-                ))}
+
+            <div className="mt-4">
+                {quizzes && quizzes.length > 0 ? (
+                    <ul>
+                        {quizzes.map((quiz) => (
+                            <Card key={quiz.id} className="mb-2">
+                                <CardHeader>
+                                    <CardTitle>{quiz.title}</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <CardDescription>{quiz.description}</CardDescription>
+                                    <CardDescription>
+                                        Created at: {new Date(quiz.created_at).toLocaleDateString()}
+                                    </CardDescription>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </ul>
+                ) : (
+                    <p>No quizzes available. Create your first quiz!</p>
+                )}
             </div>
         </div>
     )

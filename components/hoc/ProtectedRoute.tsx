@@ -2,20 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { checkAuth } from '../../lib/api';
+import { checkAuth } from '@/lib/api';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
     useEffect(() => {
         const verifyAuth = async () => {
             try {
-                const isAuth = await checkAuth();
-                setIsAuthenticated(isAuth);
-                if (!isAuth) {
-                    router.push('/login');
-                }
+                await checkAuth();
+                setIsLoading(false);
             } catch (error) {
                 console.error('Auth verification failed:', error);
                 router.push('/login');
@@ -25,8 +22,8 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
         verifyAuth();
     }, [router]);
 
-    if (!isAuthenticated) {
-        return null;
+    if (isLoading) {
+        return <div>Loading...</div>;
     }
 
     return <>{children}</>;

@@ -3,7 +3,7 @@
 import {useState} from "react";
 import {useRouter} from "next/navigation";
 import LoginForm from "../../components/LoginForm";
-import {login} from "../../lib/api";
+import {login} from "@/lib/api";
 import {LoginForm as LoginFormType} from "../../types";
 
 export default function LoginPage() {
