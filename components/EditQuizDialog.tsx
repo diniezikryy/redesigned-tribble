@@ -1,15 +1,14 @@
 import { useState } from 'react'
 import { useForm } from "react-hook-form"
-import { createQuiz } from '@/lib/api'
+import { updateQuiz } from '@/lib/api'
 import { Button } from "@/components/ui/button"
 import {
-    Dialog,
+    Dialog, DialogClose,
     DialogContent,
     DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-    DialogClose
 } from "@/components/ui/dialog"
 import {
     Form,
@@ -17,54 +16,50 @@ import {
     FormField,
     FormItem,
     FormLabel,
-    FormMessage
+    FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import {useRouter} from "next/navigation";
 
 interface FormData {
     title: string
     description: string
 }
 
-export function CreateQuizDialog({ onQuizCreated }: { onQuizCreated: () => void }) {
+export function EditQuizDialog({ quiz, onQuizUpdated }) {
     const [error, setError] = useState<string | null>(null)
-    const router = useRouter();
 
     const form = useForm<FormData>({
         defaultValues: {
-            title: "",
-            description: "",
+            title: quiz.title,
+            description: quiz.description,
         },
     })
 
-    const handleCreateQuiz = async (data: FormData) => {
+    const handleUpdateQuiz = async (data: FormData) => {
         try {
-            const newQuiz = await createQuiz(data)
-            form.reset()
-            onQuizCreated()
-            router.push(`/quizzes/${newQuiz.id}`)
+            await updateQuiz(quiz.id, data)
+            onQuizUpdated()
         } catch (error) {
-            console.error('Failed to create quiz', error)
-            setError('Failed to create quiz. Please try again.')
+            console.error('Failed to update quiz', error)
+            setError('Failed to update quiz. Please try again.')
         }
     }
 
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button>Create Quiz +</Button>
+                <Button className="ml-2" variant="outline">Edit Quiz</Button>
             </DialogTrigger>
 
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Create new quiz</DialogTitle>
-                    <DialogDescription>Create a new quiz, add questions later</DialogDescription>
+                    <DialogTitle>Edit quiz</DialogTitle>
+                    <DialogDescription>Make changes to your quiz here.</DialogDescription>
                 </DialogHeader>
 
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(handleCreateQuiz)} className="space-y-4">
+                    <form onSubmit={form.handleSubmit(handleUpdateQuiz)} className="space-y-4">
                         <FormField
                             control={form.control}
                             name="title"
@@ -72,7 +67,7 @@ export function CreateQuizDialog({ onQuizCreated }: { onQuizCreated: () => void 
                                 <FormItem>
                                     <FormLabel>Title</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Quiz Title" {...field} />
+                                        <Input {...field} />
                                     </FormControl>
                                     <FormMessage/>
                                 </FormItem>
@@ -85,7 +80,7 @@ export function CreateQuizDialog({ onQuizCreated }: { onQuizCreated: () => void 
                                 <FormItem>
                                     <FormLabel>Description</FormLabel>
                                     <FormControl>
-                                        <Textarea placeholder="Quiz description" {...field} />
+                                        <Textarea {...field} />
                                     </FormControl>
                                     <FormMessage/>
                                 </FormItem>
@@ -93,7 +88,7 @@ export function CreateQuizDialog({ onQuizCreated }: { onQuizCreated: () => void 
                         />
                         {error && <p className="text-red-500">{error}</p>}
                         <DialogClose asChild>
-                            <Button type="submit">Create Quiz</Button>
+                            <Button type="submit">Update Quiz</Button>
                         </DialogClose>
                     </form>
                 </Form>

@@ -102,7 +102,9 @@ export const createQuiz = async (quizData: { title: string; description: string 
         const errorData = await response.json();
         throw new Error(errorData.detail || 'Failed to create quiz');
     }
-    return response.json();
+    const result = await response.json();
+    console.log(result);
+    return result;
 }
 
 export const fetchQuiz = async (quizId: string): Promise<Quiz> => {
@@ -115,6 +117,34 @@ export const fetchQuiz = async (quizId: string): Promise<Quiz> => {
     if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.detail || 'Failed to fetch quiz');
+    }
+    return response.json();
+}
+
+export const deleteQuiz = async (quizId: string): Promise<void> => {
+    const response = await fetch(`${API_URL}/quizzes/${quizId}/`, {
+        method: 'DELETE',
+        credentials: 'include',
+    })
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to delete quiz');
+    }
+    return;
+}
+
+export const updateQuiz = async (quizId: string, quizData: { title: string; description: string }): Promise<Quiz> => {
+    const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(quizData),
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to update quiz');
     }
     return response.json();
 }

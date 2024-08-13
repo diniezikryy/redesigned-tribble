@@ -39,7 +39,7 @@ function DashboardPage() {
     }, [])
 
     const handleQuizCreated = () => {
-        fetchQuizzesData()  // Refetch quizzes after a new one is created
+        fetchQuizzesData()
     }
 
     if (loading) {
