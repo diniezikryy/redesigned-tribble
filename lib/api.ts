@@ -9,6 +9,20 @@ export interface Quiz {
     created_at: string;
 }
 
+export interface Question {
+    id: number | string;
+    text: string;
+    question_type: 'mcq' | 'short_answer';
+    answers?: Answer[];
+}
+
+export interface Answer {
+    id: number | string;
+    text: string;
+    is_correct: boolean;
+}
+
+
 export const login = async (username: string, password: string): Promise<void> => {
     const response = await fetch(`${API_URL}/users/token/`, {
         method: "POST",
@@ -82,6 +96,8 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
     return response;
 };
 
+// Quizzes
+
 export const fetchQuizzes = async () => {
     const response = await fetchWithAuth(`${API_URL}/quizzes/`);
     if (!response.ok) {
@@ -149,3 +165,25 @@ export const updateQuiz = async (quizId: string, quizData: { title: string; desc
     return response.json();
 }
 
+// Questions
+export const createQuestion = async (quizId: string, questionData: {
+    text: string;
+    question_type: 'mcq' | 'short_answer';
+    answers: { text: string; is_correct: boolean }[];
+}): Promise<Question> => {
+    console.log(questionData)
+    const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/questions/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(questionData),
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to create question');
+    }
+
+    return response.json();
+};

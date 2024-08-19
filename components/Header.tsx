@@ -16,11 +16,9 @@ const Header = () => {
         const fetchAuthStatus = async () => {
             try {
                 const authData = await checkAuth();
-                console.log(authData)
-                console.log("Auth data received:", authData.username);
+
                 setUsername(authData.username);
             } catch (error) {
-                console.error("Auth check failed:", error);
                 setUsername(null);
             } finally {
                 setIsLoading(false);
@@ -45,7 +43,7 @@ const Header = () => {
     }
 
     const navItems = [
-        { href: '/dashboard', label: 'Dashboard' },
+        { href: '/dashboard', label: 'Quizzes' },
     ];
 
     return (

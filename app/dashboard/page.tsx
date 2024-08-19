@@ -8,6 +8,7 @@ import {CreateQuizDialog} from "@/components/CreateQuizDialog"  // Import the ne
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card"
 import {Button} from "@/components/ui/button";
 import Link from "next/link";
+import Loading from "@/components/Loading";
 
 interface Quiz {
     id: number;
@@ -43,7 +44,7 @@ function DashboardPage() {
     }
 
     if (loading) {
-        return <p>Loading...</p>
+        return <Loading message="Fetching all quizzes" />;
     }
 
     if (error) {
