@@ -2,7 +2,7 @@
 
 import withAuth from "@/components/hoc/withAuth";
 import {useState, useEffect} from "react";
-import {createQuestion, deleteQuiz, fetchQuiz, Quiz} from "@/lib/api";
+import {createQuestion, deleteAnswer, deleteQuestion, deleteQuiz, fetchQuiz, Quiz} from "@/lib/api";
 import {EditQuizDialog} from "@/components/EditQuizDialog";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
@@ -20,11 +20,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import Loading from "@/components/Loading";
 import ErrorAlert from "@/components/ErrorAlert";
-import QuestionForm from "@/components/QuestionForm";
 import MultiQuestionForm from "@/components/MultiQuestionForm";
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
+import EditQuestion from "@/components/EditQuestion";
 
-// These interfaces are well-defined and useful for type checking
+
 export interface Answer {
     id: number;
     text: string;
@@ -60,13 +60,17 @@ function QuizDetailPage({params}: PageProps) {
     const [error, setError] = useState<string | null>(null);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isAddQuestionDialogOpen, setIsAddQuestionDialogOpen] = useState(false);
+    const [answerToDelete, setAnswerToDelete] = useState<{ questionId: number, answerId: number } | null>(null);
+    const [editingQuestionId, setEditingQuestionId] = useState<number | null>(null);
 
     const router = useRouter();
+
+    const quizId = params.quiz_id;
 
     // Fetch quiz data function
     const fetchQuizData = async () => {
         try {
-            const result = await fetchQuiz(params.quiz_id);
+            const result = await fetchQuiz(quizId);
             setQuiz(result);
         } catch (error) {
             console.error('Failed to fetch quiz', error);
@@ -79,14 +83,14 @@ function QuizDetailPage({params}: PageProps) {
     // Use effect to fetch quiz data on component mount
     useEffect(() => {
         fetchQuizData();
-    }, []);  // Consider adding params.quiz_id to the dependency array if it can change
+    }, []);
 
     // Handle quiz deletion
     const handleDeleteQuiz = async () => {
         if (!quiz) return;
 
         try {
-            await deleteQuiz(params.quiz_id);
+            await deleteQuiz(quizId);
             router.push('/dashboard'); // Redirect to quiz list page after successful deletion
         } catch (error) {
             console.error('Failed to delete quiz', error);
@@ -103,7 +107,7 @@ function QuizDetailPage({params}: PageProps) {
     const handleAddQuestions = async (questions: Question[]) => {
         try {
             for (const question of questions) {
-                await createQuestion(params.quiz_id, question);
+                await createQuestion(quizId, question);
             }
             await fetchQuizData(); // Refresh quiz data
             setIsAddQuestionDialogOpen(false); // Close the dialog
@@ -112,6 +116,51 @@ function QuizDetailPage({params}: PageProps) {
             setError('Failed to add questions. Please try again.');
         }
     }
+
+    // handle deleting questions
+    const handleDeleteQuestion = async (questionId: number) => {
+        try {
+            await deleteQuestion(quizId, questionId);
+            setQuiz(prevQuiz => {
+                if (!prevQuiz) return null;
+                return {
+                    ...prevQuiz,
+                    questions: prevQuiz.questions.filter(q => q.id !== questionId)
+                };
+            });
+            setQuestionToDelete(null);  // Close the confirmation dialog
+        } catch (error) {
+            console.error('Failed to delete question', error);
+            setError('Failed to delete question. Please try again.');
+        }
+    };
+
+    // handle deleting answers
+    const handleDeleteAnswer = async (questionId: number, answerId: number) => {
+        try {
+            await deleteAnswer(quizId, questionId, answerId);
+            setQuiz(prevQuiz => {
+                if (!prevQuiz) return null;
+                return {
+                    ...prevQuiz,
+                    questions: prevQuiz.questions.map(q =>
+                        q.id === questionId
+                            ? {...q, answers: q.answers.filter(a => a.id !== answerId)}
+                            : q
+                    )
+                };
+            });
+            setAnswerToDelete(null);  // Close the confirmation dialog
+        } catch (error) {
+            console.error('Failed to delete answer', error);
+            setError('Failed to delete answer. Please try again.');
+        }
+    };
+
+    const handleQuestionUpdated = async () => {
+        await fetchQuizData();
+        setEditingQuestionId(null);
+    };
 
     // Loading and error states
     if (loading) {
@@ -192,22 +241,69 @@ function QuizDetailPage({params}: PageProps) {
                 {quiz.questions.map((question, index) => (
                     <Card key={question.id} className="mb-4">
                         <CardHeader>
-                            <CardTitle>Question {index + 1}</CardTitle>
+                            <CardTitle className="flex justify-between items-center">
+                                <span>Question {index + 1}</span>
+                                <div>
+                                    {editingQuestionId === question.id ? (
+                                        <Button variant="outline" onClick={() => setEditingQuestionId(null)}>
+                                            Cancel Edit
+                                        </Button>
+                                    ) : (
+                                        <Button variant="outline" onClick={() => setEditingQuestionId(question.id)}>
+                                            Edit Question
+                                        </Button>
+                                    )}
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="destructive" size="sm" className="ml-2">
+                                                Delete Question
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    This will permanently delete the question and all its answers.
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                <AlertDialogAction onClick={() => handleDeleteQuestion(question.id)}>
+                                                    Delete
+                                                </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
+                            </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="font-semibold mb-2">{question.text}</p>
-                            <p className="text-sm text-gray-500 mb-2">Type: {question.question_type}</p>
-                            <ul className="list-disc pl-5">
-                                {question.answers.map((answer) => (
-                                    <li
-                                        key={answer.id}
-                                        className={answer.is_correct ? 'text-green-600' : ''}
-                                    >
+                            {editingQuestionId === question.id ? (
+                                <EditQuestion
+                                    quizId={quizId}
+                                    questionId={question.id}
+                                    onQuestionUpdated={handleQuestionUpdated}
+                                />
+                            ) : (
+                                <>
+                                    <p className="font-semibold mb-2">{question.text}</p>
+                                    <p className="text-sm text-gray-500 mb-2">Type: {question.question_type}</p>
+                                    <ul className="list-disc pl-5">
+                                        {question.answers.map((answer) => (
+                                            <li key={answer.id}
+                                                className={`flex justify-between items-center ${answer.is_correct ? 'text-green-600' : ''}`}>
+                                    <span>
                                         {answer.text} {answer.is_correct &&
                                         <span className="font-bold">(Correct)</span>}
-                                    </li>
-                                ))}
-                            </ul>
+                                    </span>
+                                                <AlertDialog>
+                                                    {/* ... (existing AlertDialog for deleting answer) ... */}
+                                                </AlertDialog>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </>
+                            )}
                         </CardContent>
                     </Card>
                 ))}

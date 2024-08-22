@@ -187,3 +187,56 @@ export const createQuestion = async (quizId: string, questionData: {
 
     return response.json();
 };
+
+export const fetchQuestion = async (quizId: string, questionId: string): Promise<Question> => {
+    const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/questions/${questionId}/`);
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch question')
+    }
+
+    return response.json();
+}
+
+export const deleteQuestion = async (quizId: string, questionId: string): Promise<void> => {
+    const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/questions/${questionId}`, {
+        method: 'DELETE',
+    })
+
+    if (!response.ok) {
+        throw new Error('Failed to delete quiz');
+    }
+}
+
+export const deleteAnswer = async (quizId: string, questionId: string, answerId: string): Promise<void> => {
+    const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/questions/${questionId}/answers/${answerId}/`, {
+        method: 'DELETE',
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to delete answer');
+    }
+}
+
+export const updateQuestion = async (quizId: string, questionId: number, questionData: Partial<Question>): Promise<Question> => {
+    const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/questions/${questionId}/`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            ...questionData,
+            answers: questionData.answers?.map(answer => ({
+                ...answer,
+                id: answer.id && answer.id > 0 ? answer.id : undefined
+            }))
+        }),
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to update question');
+    }
+
+    return response.json();
+};
+
