@@ -4,7 +4,7 @@ import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {Checkbox} from "@/components/ui/checkbox";
-import {Question, Answer} from '@/lib/api';
+import {Question, Answer} from '@/types';
 
 interface EditQuestionFormProps {
     question: Question;
@@ -29,7 +29,7 @@ const EditQuestionForm: React.FC<EditQuestionFormProps> = ({question, onSubmit})
         setAnswers(newAnswers);
     };
 
-    const handleDeleteAnswer = (index: string) => {
+    const handleDeleteAnswer = (index: number) => {
         const newAnswers = answers.filter((_, i) => i !== index);
 
         setAnswers(newAnswers);
@@ -46,7 +46,7 @@ const EditQuestionForm: React.FC<EditQuestionFormProps> = ({question, onSubmit})
             answers: answers.map(answer => ({
                 ...answer,
                 // If it's a new answer (negative id), remove the id so the backend can create a new one
-                id: answer.id > 0 ? answer.id : undefined
+                id: answer.id !== undefined ? answer.id : -1, // Provide a default value of -1
             }))
         }
 
@@ -69,7 +69,8 @@ const EditQuestionForm: React.FC<EditQuestionFormProps> = ({question, onSubmit})
             {/* Question Type Select */}
             <div>
                 <Label htmlFor="question-type">Question Type</Label>
-                <Select onValueChange={setQuestionType} value={questionType}>
+                <Select onValueChange={(value) => setQuestionType(value as 'mcq' | 'short_answer')}
+                        value={questionType}>
                     <SelectTrigger id="question-type">
                         <SelectValue placeholder="Select question type"/>
                     </SelectTrigger>

@@ -2,7 +2,8 @@
 
 import withAuth from "@/components/hoc/withAuth";
 import {useState, useEffect} from "react";
-import {createQuestion, deleteAnswer, deleteQuestion, deleteQuiz, fetchQuiz, Quiz} from "@/lib/api";
+import {createQuestion, deleteQuestion, deleteQuiz, fetchQuiz} from "@/lib/api";
+import {Quiz, Question} from "@/types"
 import {EditQuizDialog} from "@/components/EditQuizDialog";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
@@ -24,29 +25,6 @@ import MultiQuestionForm from "@/components/MultiQuestionForm";
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
 import EditQuestion from "@/components/EditQuestion";
 
-
-export interface Answer {
-    id: number;
-    text: string;
-    is_correct: boolean;
-}
-
-export interface Question {
-    id: number;
-    text: string;
-    question_type: 'mcq' | 'short_answer';
-    answers: Answer[];
-}
-
-export interface Quiz {
-    id: number;
-    title: string;
-    description: string;
-    creator: string;
-    created_at: string;
-    questions: Question[];
-}
-
 interface PageProps {
     params: {
         quiz_id: string
@@ -54,20 +32,20 @@ interface PageProps {
 }
 
 function QuizDetailPage({params}: PageProps) {
-    // State declarations are good and clear
+    // State management for the quiz details and UI control
     const [quiz, setQuiz] = useState<Quiz | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isAddQuestionDialogOpen, setIsAddQuestionDialogOpen] = useState(false);
-    const [answerToDelete, setAnswerToDelete] = useState<{ questionId: number, answerId: number } | null>(null);
     const [editingQuestionId, setEditingQuestionId] = useState<number | null>(null);
 
     const router = useRouter();
+    const quizId = parseInt(params.quiz_id, 10);
 
-    const quizId = params.quiz_id;
 
-    // Fetch quiz data function
+    // Fetch quiz data from the API
+    // This function is called on component mount and after certain operations
     const fetchQuizData = async () => {
         try {
             const result = await fetchQuiz(quizId);
@@ -80,18 +58,18 @@ function QuizDetailPage({params}: PageProps) {
         }
     }
 
-    // Use effect to fetch quiz data on component mount
+    // Effect to fetch quiz data on component mount
     useEffect(() => {
         fetchQuizData();
     }, []);
 
     // Handle quiz deletion
+    // This function is called when the user confirms deletion in the AlertDialog
     const handleDeleteQuiz = async () => {
         if (!quiz) return;
-
         try {
             await deleteQuiz(quizId);
-            router.push('/dashboard'); // Redirect to quiz list page after successful deletion
+            router.push('/dashboard'); // Redirect to dashboard after successful deletion
         } catch (error) {
             console.error('Failed to delete quiz', error);
             setError('Failed to delete quiz. Please try again.');
@@ -99,17 +77,19 @@ function QuizDetailPage({params}: PageProps) {
     }
 
     // Handle quiz update
+    // This function is called after the quiz is updated in the EditQuizDialog
     const handleQuizUpdated = async () => {
         await fetchQuizData();
     }
 
     // Handle adding new questions
-    const handleAddQuestions = async (questions: Question[]) => {
+    // This function is called when the MultiQuestionForm is submitted
+    const handleAddQuestions = async (questions: Omit<Question, "id">[]) => {
         try {
             for (const question of questions) {
                 await createQuestion(quizId, question);
             }
-            await fetchQuizData(); // Refresh quiz data
+            await fetchQuizData(); // Refresh quiz data after adding questions
             setIsAddQuestionDialogOpen(false); // Close the dialog
         } catch (error) {
             console.error('Failed to add questions', error);
@@ -117,7 +97,8 @@ function QuizDetailPage({params}: PageProps) {
         }
     }
 
-    // handle deleting questions
+    // Handle deleting a question
+    // This function is called when a user confirms question deletion
     const handleDeleteQuestion = async (questionId: number) => {
         try {
             await deleteQuestion(quizId, questionId);
@@ -128,52 +109,38 @@ function QuizDetailPage({params}: PageProps) {
                     questions: prevQuiz.questions.filter(q => q.id !== questionId)
                 };
             });
-            setQuestionToDelete(null);  // Close the confirmation dialog
         } catch (error) {
             console.error('Failed to delete question', error);
             setError('Failed to delete question. Please try again.');
         }
     };
 
-    // handle deleting answers
-    const handleDeleteAnswer = async (questionId: number, answerId: number) => {
-        try {
-            await deleteAnswer(quizId, questionId, answerId);
-            setQuiz(prevQuiz => {
-                if (!prevQuiz) return null;
-                return {
-                    ...prevQuiz,
-                    questions: prevQuiz.questions.map(q =>
-                        q.id === questionId
-                            ? {...q, answers: q.answers.filter(a => a.id !== answerId)}
-                            : q
-                    )
-                };
-            });
-            setAnswerToDelete(null);  // Close the confirmation dialog
-        } catch (error) {
-            console.error('Failed to delete answer', error);
-            setError('Failed to delete answer. Please try again.');
-        }
-    };
-
+    // Handle updating a question
+    // This function is called after a question is edited in the EditQuestion component
     const handleQuestionUpdated = async () => {
         await fetchQuizData();
-        setEditingQuestionId(null);
+        setEditingQuestionId(null); // Exit edit mode
     };
 
-    // Loading and error states
+    // Render loading state
     if (loading) {
         return <Loading message="Fetching quiz details"/>;
     }
 
+    // Render error state
     if (error) {
         return <ErrorAlert message={error}/>;
     }
 
-    // Main render
+    // Early return if quiz is null
+    if (!quiz) {
+        return <ErrorAlert message={"No quiz data available."}/>;
+    }
+
+    // Main render of the quiz details and questions
     return (
         <main>
+            {/* Quiz title and action buttons */}
             <div className="flex items-center justify-center">
                 <h2 className="mt-10 scroll-m-20 pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
                     {quiz.title}
@@ -289,16 +256,13 @@ function QuizDetailPage({params}: PageProps) {
                                     <p className="font-semibold mb-2">{question.text}</p>
                                     <p className="text-sm text-gray-500 mb-2">Type: {question.question_type}</p>
                                     <ul className="list-disc pl-5">
-                                        {question.answers.map((answer) => (
+                                        {question.answers?.map((answer) => (
                                             <li key={answer.id}
                                                 className={`flex justify-between items-center ${answer.is_correct ? 'text-green-600' : ''}`}>
-                                    <span>
-                                        {answer.text} {answer.is_correct &&
-                                        <span className="font-bold">(Correct)</span>}
-                                    </span>
-                                                <AlertDialog>
-                                                    {/* ... (existing AlertDialog for deleting answer) ... */}
-                                                </AlertDialog>
+                                                <span>
+                                                    {answer.text} {answer.is_correct &&
+                                                    <span className="font-bold">(Correct)</span>}
+                                                </span>
                                             </li>
                                         ))}
                                     </ul>

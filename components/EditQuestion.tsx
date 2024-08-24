@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { fetchQuestion, updateQuestion } from '@/lib/api';
 import EditQuestionForm from './EditQuestionForm';
 import { useToast } from '@/components/ui/use-toast';
-import { Question } from '@/lib/api';  // Import the Question type
+import { Question } from '@/types';  // Import the Question type
 
 interface EditQuestionProps {
-  quizId: string;
+  quizId: number;
   questionId: number;
   onQuestionUpdated: () => void;
 }
@@ -19,7 +19,7 @@ const EditQuestion: React.FC<EditQuestionProps> = ({ quizId, questionId, onQuest
   useEffect(() => {
     const loadQuestion = async () => {
       try {
-        const fetchedQuestion = await fetchQuestion(quizId, questionId.toString());
+        const fetchedQuestion = await fetchQuestion(quizId, questionId);
         setQuestion(fetchedQuestion);
       } catch (err) {
         setError('Failed to load question');

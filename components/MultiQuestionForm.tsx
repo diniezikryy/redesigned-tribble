@@ -5,26 +5,26 @@ import {Label} from "@/components/ui/label";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {Checkbox} from "@/components/ui/checkbox";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {Question, Answer} from "@/types"
 
-interface Question {
-    text: string;
-    question_type: 'mcq' | 'short_answer';
-    answers: { text: string; is_correct: boolean }[];
+type AnswerWithoutId = Omit<Answer, 'id'>
+type QuestionWithoutId = Omit<Question, 'id'> & {
+    answers: AnswerWithoutId[];
 }
 
 interface MultiQuestionFormProps {
-    onSubmit: (questions: Question[]) => void;
+    onSubmit: (questions: QuestionWithoutId[]) => Promise<void>;
 }
 
 const MultiQuestionForm: React.FC<MultiQuestionFormProps> = ({onSubmit}) => {
-    const [questions, setQuestions] = useState<Question[]>([{
+    const [questions, setQuestions] = useState<QuestionWithoutId[]>([{
         text: '',
         question_type: 'mcq',
         answers: [{text: '', is_correct: false}]
     }]);
 
     const addQuestion = () => {
-        const newQuestion: Question = {
+        const newQuestion: QuestionWithoutId = {
             text: '',
             question_type: 'mcq',
             answers: [{text: '', is_correct: false}]
@@ -57,12 +57,14 @@ const MultiQuestionForm: React.FC<MultiQuestionFormProps> = ({onSubmit}) => {
     const addAnswer = (questionIndex: number) => {
         const updatedQuestions = [...questions];
         updatedQuestions[questionIndex].answers.push({text: '', is_correct: false});
-
         setQuestions(updatedQuestions);
     };
 
     const updateAnswerText = (questionIndex: number, answerIndex: number, newText: string) => {
         const updatedQuestions = [...questions];
+        if (updatedQuestions[questionIndex].answers && updatedQuestions[questionIndex].answers[answerIndex]) {
+            updatedQuestions[questionIndex].answers[answerIndex].text = newText;
+        }
         updatedQuestions[questionIndex].answers[answerIndex].text = newText;
 
         setQuestions(updatedQuestions);
@@ -71,6 +73,9 @@ const MultiQuestionForm: React.FC<MultiQuestionFormProps> = ({onSubmit}) => {
     // Function to update an answer's correctness
     const updateAnswerCorrectness = (questionIndex: number, answerIndex: number, is_correct: boolean) => {
         const updatedQuestions = [...questions];
+        if (updatedQuestions[questionIndex].answers && updatedQuestions[questionIndex].answers[answerIndex]) {
+            updatedQuestions[questionIndex].answers[answerIndex].is_correct = is_correct;
+        }
         updatedQuestions[questionIndex].answers[answerIndex].is_correct = is_correct;
 
         setQuestions(updatedQuestions);
@@ -122,7 +127,7 @@ const MultiQuestionForm: React.FC<MultiQuestionFormProps> = ({onSubmit}) => {
                         {question.question_type === 'mcq' && (
                             <div className="space-y-2">
                                 <Label>Answers</Label>
-                                {question.answers.map((answer, answerIndex) => (
+                                {question.answers?.map((answer, answerIndex) => (
                                     <div key={answerIndex} className="flex items-center space-x-2">
                                         <Input
                                             value={answer.text}

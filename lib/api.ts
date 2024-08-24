@@ -1,26 +1,6 @@
-import {AuthData} from "@/types";
+import {AuthData, Question, Quiz} from "@/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-export interface Quiz {
-    id: number;
-    title: string;
-    description: string;
-    created_at: string;
-}
-
-export interface Question {
-    id: number | string;
-    text: string;
-    question_type: 'mcq' | 'short_answer';
-    answers?: Answer[];
-}
-
-export interface Answer {
-    id: number | string;
-    text: string;
-    is_correct: boolean;
-}
 
 
 export const login = async (username: string, password: string): Promise<void> => {
@@ -123,7 +103,7 @@ export const createQuiz = async (quizData: { title: string; description: string 
     return result;
 }
 
-export const fetchQuiz = async (quizId: string): Promise<Quiz> => {
+export const fetchQuiz = async (quizId: number): Promise<Quiz> => {
     const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/`, {
         method: 'GET',
         headers: {
@@ -137,7 +117,7 @@ export const fetchQuiz = async (quizId: string): Promise<Quiz> => {
     return response.json();
 }
 
-export const deleteQuiz = async (quizId: string): Promise<void> => {
+export const deleteQuiz = async (quizId: number): Promise<void> => {
     const response = await fetch(`${API_URL}/quizzes/${quizId}/`, {
         method: 'DELETE',
         credentials: 'include',
@@ -150,7 +130,7 @@ export const deleteQuiz = async (quizId: string): Promise<void> => {
     return;
 }
 
-export const updateQuiz = async (quizId: string, quizData: { title: string; description: string }): Promise<Quiz> => {
+export const updateQuiz = async (quizId: number, quizData: { title: string; description: string }): Promise<Quiz> => {
     const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/`, {
         method: 'PUT',
         headers: {
@@ -166,12 +146,8 @@ export const updateQuiz = async (quizId: string, quizData: { title: string; desc
 }
 
 // Questions
-export const createQuestion = async (quizId: string, questionData: {
-    text: string;
-    question_type: 'mcq' | 'short_answer';
-    answers: { text: string; is_correct: boolean }[];
-}): Promise<Question> => {
-    console.log(questionData)
+export const createQuestion = async (quizId: number, questionData:Omit<Question, 'id'>): Promise<Question> => {
+    // console.log(questionData)
     const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/questions/`, {
         method: 'POST',
         headers: {
@@ -188,7 +164,7 @@ export const createQuestion = async (quizId: string, questionData: {
     return response.json();
 };
 
-export const fetchQuestion = async (quizId: string, questionId: string): Promise<Question> => {
+export const fetchQuestion = async (quizId: number, questionId: number): Promise<Question> => {
     const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/questions/${questionId}/`);
 
     if (!response.ok) {
@@ -198,7 +174,7 @@ export const fetchQuestion = async (quizId: string, questionId: string): Promise
     return response.json();
 }
 
-export const deleteQuestion = async (quizId: string, questionId: string): Promise<void> => {
+export const deleteQuestion = async (quizId: number, questionId: number): Promise<void> => {
     const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/questions/${questionId}`, {
         method: 'DELETE',
     })
@@ -208,7 +184,7 @@ export const deleteQuestion = async (quizId: string, questionId: string): Promis
     }
 }
 
-export const deleteAnswer = async (quizId: string, questionId: string, answerId: string): Promise<void> => {
+export const deleteAnswer = async (quizId: number, questionId: number, answerId: number): Promise<void> => {
     const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/questions/${questionId}/answers/${answerId}/`, {
         method: 'DELETE',
     });
@@ -218,7 +194,7 @@ export const deleteAnswer = async (quizId: string, questionId: string, answerId:
     }
 }
 
-export const updateQuestion = async (quizId: string, questionId: number, questionData: Partial<Question>): Promise<Question> => {
+export const updateQuestion = async (quizId: number, questionId: number, questionData: Partial<Question>): Promise<Question> => {
     const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/questions/${questionId}/`, {
         method: 'PUT',
         headers: {

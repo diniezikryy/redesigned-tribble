@@ -20,13 +20,19 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import {Quiz} from "@/types"
 
 interface FormData {
     title: string
     description: string
 }
 
-export function EditQuizDialog({ quiz, onQuizUpdated }) {
+interface EditQuizDialogProps {
+    quiz: Quiz,
+    onQuizUpdated: () => void;
+}
+
+export function EditQuizDialog({ quiz, onQuizUpdated }: EditQuizDialogProps) {
     const [error, setError] = useState<string | null>(null)
 
     const form = useForm<FormData>({
