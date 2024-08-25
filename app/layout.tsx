@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/Header";
 import { ThemeProvider } from "@/components/theme-provider"
 
 const inter = Inter({ subsets: ["latin"] });
@@ -25,10 +24,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-            <Header/>
-          <div className="container mx-auto p-4 min-h-screen bg-background text-foreground">
-            {children}
-          </div>
+          {children}
         </ThemeProvider>
       </body>
     </html>
