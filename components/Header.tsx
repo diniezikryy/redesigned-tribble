@@ -44,6 +44,7 @@ const Header = () => {
 
     const navItems = [
         { href: '/dashboard', label: 'Quizzes' },
+        { href: '/attempts', label: 'Attempts' },
     ];
 
     return (

@@ -35,3 +35,20 @@ export interface Answer {
     text: string;
     is_correct: boolean;
 }
+
+export interface QuizAttempt {
+  id: number;
+  user: User;
+  quiz: Quiz;
+  startTime: Date;
+  endTime: Date | null;
+  score: number | null;
+}
+
+export interface UserAnswer {
+  id: number;
+  quizAttempt: QuizAttempt;
+  question: Question;
+  selectedAnswer: Answer | null;
+  textAnswer: string | null;
+}

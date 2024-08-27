@@ -1,4 +1,4 @@
-import {AuthData, Question, Quiz} from "@/types";
+import {AuthData, Question, Quiz, QuizAttempt} from "@/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -145,7 +145,7 @@ export const updateQuiz = async (quizId: number, quizData: { title: string; desc
     return response.json();
 }
 
-// Questions
+// Questions & Answers
 export const createQuestion = async (quizId: number, questionData:Omit<Question, 'id'>): Promise<Question> => {
     // console.log(questionData)
     const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/questions/`, {
@@ -215,4 +215,30 @@ export const updateQuestion = async (quizId: number, questionId: number, questio
 
     return response.json();
 };
+
+// Attempts
+export const fetchAttempts = async (): Promise<QuizAttempt[]> => {
+    const response = await fetchWithAuth(`${API_URL}/attempts/`);
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch attempts');
+    }
+    return response.json();
+}
+
+export interface AttemptOverview {
+    id: number;
+    title: string;
+    attemptCount: number;
+    highestScore: number;
+}
+
+export const fetchAttemptsOverview = async (): Promise<AttemptOverview[]> => {
+    const response = await fetchWithAuth(`${API_URL}/attempts/overview`);
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch attempt overview');
+    }
+    return response.json();
+}
 

@@ -17,6 +17,7 @@ interface Quiz {
     created_at: string;
 }
 
+
 function DashboardPage() {
     const [quizzes, setQuizzes] = useState<Quiz[] | null>(null)
     const [loading, setLoading] = useState<boolean>(true)
@@ -44,7 +45,7 @@ function DashboardPage() {
     }
 
     if (loading) {
-        return <Loading message="Fetching all quizzes" />;
+        return <Loading message="Fetching all quizzes"/>;
     }
 
     if (error) {
