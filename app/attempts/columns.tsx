@@ -56,9 +56,8 @@ export const columns: ColumnDef<AttemptOverview>[] = [
                     <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuSeparator/>
-                        <DropdownMenuItem onClick={() => router.push(`/quizzes/`)}>Go to quiz</DropdownMenuItem>
-                        {/*TODO - Attempt Quiz functionality.*/}
-                        <DropdownMenuItem>Attempt Quiz</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => router.push(`/quizzes/${attempt.id}`)}>Go to quiz</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => router.push(`/attempts/${attempt.id}`)}>Attempt Quiz</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             )

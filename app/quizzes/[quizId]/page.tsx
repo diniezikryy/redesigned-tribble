@@ -27,7 +27,7 @@ import EditQuestion from "@/components/EditQuestion";
 
 interface PageProps {
     params: {
-        quiz_id: string
+        quizId: string
     }
 }
 
@@ -41,7 +41,7 @@ function QuizDetailPage({params}: PageProps) {
     const [editingQuestionId, setEditingQuestionId] = useState<number | null>(null);
 
     const router = useRouter();
-    const quizId = parseInt(params.quiz_id, 10);
+    const quizId = parseInt(params.quizId, 10);
 
 
     // Fetch quiz data from the API

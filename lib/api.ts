@@ -164,6 +164,16 @@ export const createQuestion = async (quizId: number, questionData:Omit<Question,
     return response.json();
 };
 
+export const fetchAllQuestions = async (quizId: number): Promise<Question[]> => {
+    const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/questions/`)
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch all questions for quizId: ${quizId}`);
+    }
+
+    return response.json();
+}
+
 export const fetchQuestion = async (quizId: number, questionId: number): Promise<Question> => {
     const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/questions/${questionId}/`);
 
