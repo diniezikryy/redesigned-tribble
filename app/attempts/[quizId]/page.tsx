@@ -7,6 +7,7 @@ import withAuth from "@/components/hoc/withAuth";
 import {fetchAllQuestions, fetchAttemptsOverview} from "@/lib/api";
 import {Question, Answer} from "@/types";
 import Loading from "@/components/Loading";
+import {useRouter} from "next/navigation"
 
 // expanded data table
 import {
@@ -150,8 +151,11 @@ function QuizAttemptDetailPage({params}: PageProps) {
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
-
+  const router = useRouter();
   const quizId = parseInt(params.quizId, 10);
+
+  // TODO - Send quiz id for post request to /api/attempts/. then quiz attempt id will be generated
+  // TODO - once attempt id is generated, then sent to attempt id page detail.
 
   useEffect(() => {
     async function fetchData() {
