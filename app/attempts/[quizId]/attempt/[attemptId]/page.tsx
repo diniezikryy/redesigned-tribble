@@ -14,12 +14,14 @@ import {
 import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group"
 import {Label} from "@/components/ui/label"
 import {Input} from "@/components/ui/input"
+import {fetchAllQuestions, fetchAttempt, submitAttempt} from "@/lib/api";
+import {useRouter} from "next/navigation";
 
 const QuestionAttempt: React.FC<{
   question: Question;
   onAnswerChange: (questionId: number, answerId: number) => void;
   selectedAnswerId: number | null;
-}> = ({ question, onAnswerChange, selectedAnswerId }) => {
+}> = ({question, onAnswerChange, selectedAnswerId}) => {
   return (
     <Card className="mb-4">
       <CardHeader>
@@ -32,7 +34,7 @@ const QuestionAttempt: React.FC<{
         >
           {question.answers.map((answer) => (
             <div key={answer.id} className="flex items-center space-x-2 mb-2">
-              <RadioGroupItem value={answer.id.toString()} id={`answer-${answer.id}`} />
+              <RadioGroupItem value={answer.id.toString()} id={`answer-${answer.id}`}/>
               <Label htmlFor={`answer-${answer.id}`}>{answer.text}</Label>
             </div>
           ))}
@@ -133,27 +135,67 @@ const mockQuestionData = [
 ]
 
 function AttemptPage({params}: PageProps) {
-  const [questions, setQuestionData] = useState<Question[]>(mockQuestionData);
+  const [attemptData, setAttemptData] = useState<Attempt | null>(null);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [userAnswers, setUserAnswers] = useState<Record<number, number>>({});
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState<boolean>(false);
 
+const router = useRouter();
   const attemptId = parseInt(params.attemptId, 10);
 
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        // Step 1: Fetch attempt data
+        const attempt = await fetchAttempt(attemptId);
+        setAttemptData(attempt);
+
+        // Step 2: Fetch questions for the quiz
+        const quizQuestions = await fetchAllQuestions(attempt.quiz);
+        setQuestions(quizQuestions);
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+        setError('Failed to load quiz data. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, [attemptId]);
+
   const handleAnswerChange = (questionId: number, answerId: number) => {
-    setUserAnswers(prev => ({ ...prev, [questionId]: answerId }));
+    setUserAnswers(prev => ({...prev, [questionId]: answerId}));
   };
 
-  const handleSubmit = () => {
-    const formattedAnswers = {
-      answers: Object.entries(userAnswers).map(([questionId, answerId]) => ({
-        question: parseInt(questionId),
-        selected_answer: answerId
-      }))
-    };
-    console.log("Submitting answers:", formattedAnswers);
-    // Here you would send formattedAnswers to your API
-  };
+  const handleSubmit = async () => {
+  setSubmitting(true);
+  setError(null);
+
+  try {
+    const formattedAnswers = Object.entries(userAnswers).map(([questionId, answerId]) => ({
+      question: parseInt(questionId),
+      selected_answer: answerId
+    }));
+
+    const result = await submitAttempt(attemptId, formattedAnswers);
+    console.log("Quiz submitted successfully:", result);
+
+    // Navigate to the review page
+    router.push(`/attempts/${attemptData.quiz}/attempt/${attemptId}/review`);
+  } catch (error) {
+    console.error('Failed to submit quiz:', error);
+    if (error instanceof Error) {
+      setError(error.message);
+    } else {
+      setError('An unexpected error occurred');
+    }
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div className="text-red-500">{error}</div>;

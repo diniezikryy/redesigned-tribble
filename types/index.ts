@@ -43,6 +43,7 @@ export interface QuizAttempt {
   startTime: Date;
   endTime: Date | null;
   score: number | null;
+  userAnswers: UserAnswer[];
 }
 
 export interface UserAnswer {
@@ -51,4 +52,20 @@ export interface UserAnswer {
   question: Question;
   selectedAnswer: Answer | null;
   textAnswer: string | null;
+}
+export interface AttemptResult {
+  id: number;
+  quiz: number;
+  user: number;
+  start_time: string;
+  end_time: string;
+  score: number;
+  user_answers: UserAnswer[];
+}
+
+export interface AttemptOverview {
+  id: number;
+  title: string;
+  attemptCount: number;
+  highestScore: number;
 }

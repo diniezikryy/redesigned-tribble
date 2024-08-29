@@ -4,7 +4,7 @@
 
 import React, {useEffect, useState} from "react";
 import withAuth from "@/components/hoc/withAuth";
-import {fetchAllQuestions, fetchAttemptsOverview} from "@/lib/api";
+import {createAttempt, createQuiz, fetchAllQuestions, fetchAttemptsOverview} from "@/lib/api";
 import {Question, Answer} from "@/types";
 import Loading from "@/components/Loading";
 import {useRouter} from "next/navigation"
@@ -154,8 +154,6 @@ function QuizAttemptDetailPage({params}: PageProps) {
   const router = useRouter();
   const quizId = parseInt(params.quizId, 10);
 
-  // TODO - Send quiz id for post request to /api/attempts/. then quiz attempt id will be generated
-  // TODO - once attempt id is generated, then sent to attempt id page detail.
 
   useEffect(() => {
     async function fetchData() {
@@ -174,6 +172,25 @@ function QuizAttemptDetailPage({params}: PageProps) {
     fetchData()
   }, [])
 
+  // TODO - Send quiz id for post request to /api/attempts/. then quiz attempt id will be generated
+  // TODO - once attempt id is generated, then sent to attempt id page detail.
+
+  const handleAttemptQuiz = async () => {
+    try {
+      setLoading(true);
+      const attemptData = await createAttempt(quizId);
+      console.log('Attempt created: ', attemptData);
+
+      // redirect to the attempt page
+      router.push(`/attempts/${quizId}/attempt/${attemptData.id}`);
+    } catch (error) {
+      console.error('Failed to create attempt:', error);
+      setError('Failed to start quiz attempt. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   if (loading) return <Loading message="Fetching all quizzes & attempt data"/>
   if (error) return <p className="text-red-500">{error}</p>
 
@@ -184,7 +201,13 @@ function QuizAttemptDetailPage({params}: PageProps) {
           Total number of questions: {questions.length}
         </div>
         <div className="ml-auto">
-          <Button variant={"outline"}>Attempt Quiz</Button>
+          <Button
+            variant="outline"
+            onClick={handleAttemptQuiz}
+            disabled={loading}
+          >
+            {loading ? 'Creating Attempt...' : 'Attempt Quiz'}
+          </Button>
         </div>
       </div>
 
