@@ -1,4 +1,4 @@
-import {AttemptOverview, AuthData, Question, Quiz, QuizAttempt} from "@/types";
+import {AttemptOverview, AttemptResult, AuthData, Question, Quiz, QuizAttempt} from "@/types";
 import {Attempt} from "@/app/attempts/columns";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -260,6 +260,15 @@ export const fetchAttempt = async (attemptId: number): Promise<Attempt> => {
 
   if (!response.ok) {
     throw new Error('Failed to fetch attempt');
+  }
+  return response.json();
+}
+
+export const fetchAttemptsByQuiz = async (quizId: number): Promise<AttemptResult[]> => {
+  const response = await fetchWithAuth(`${API_URL}/attempts/?quiz_id=${quizId}`);
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch attempts for quizId: ${quizId}`);
   }
   return response.json();
 }

@@ -1,3 +1,5 @@
+// data-table.tsx
+
 "use client"
 
 import {
@@ -9,7 +11,7 @@ import {
   ColumnFiltersState,
   getFilteredRowModel,
 } from "@tanstack/react-table"
-import {Input} from "@/components/ui/input"
+import { Input } from "@/components/ui/input"
 import {
   Table,
   TableBody,
@@ -19,14 +21,16 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import React from "react";
+import { useRouter } from "next/navigation";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
 }
 
-export function DataTable<TData, TValue>({columns, data}: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData, TValue>) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const router = useRouter();
 
   const table = useReactTable({
     data,
@@ -40,14 +44,18 @@ export function DataTable<TData, TValue>({columns, data}: DataTableProps<TData, 
     }
   })
 
+  const handleRowClick = (id: number) => {
+    router.push(`/attempts/${id}`);
+  }
+
   return (
     <div>
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter quizzes"
-          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}  // Changed from "quizTitle" to "title"
+          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("title")?.setFilterValue(event.target.value)  // Changed from "quizTitle" to "title"
+            table.getColumn("title")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
@@ -57,18 +65,16 @@ export function DataTable<TData, TValue>({columns, data}: DataTableProps<TData, 
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
                           header.column.columnDef.header,
                           header.getContext()
                         )}
-                    </TableHead>
-                  )
-                })}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
@@ -78,6 +84,8 @@ export function DataTable<TData, TValue>({columns, data}: DataTableProps<TData, 
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  onClick={() => handleRowClick((row.original as any).id)}
+                  className="cursor-pointer hover:bg-gray-100"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -97,6 +105,5 @@ export function DataTable<TData, TValue>({columns, data}: DataTableProps<TData, 
         </Table>
       </div>
     </div>
-
   )
 }

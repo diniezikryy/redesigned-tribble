@@ -1,29 +1,9 @@
-"use client"
+// columns.tsx
 
-import {ColumnDef} from "@tanstack/react-table"
-import {MoreHorizontal} from "lucide-react";
-import {Button} from "@/components/ui/button";
-import {useRouter} from "next/navigation";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {AttemptOverview} from "@/lib/api";
-
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
-
-
-export type Attempt = {
-    id: number;
-    quizTitle: string;
-    attempts: number;
-    highestScore: number;
-};
+import { ColumnDef } from "@tanstack/react-table"
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { AttemptOverview } from "@/lib/api";
 
 export const columns: ColumnDef<AttemptOverview>[] = [
     {
@@ -40,29 +20,23 @@ export const columns: ColumnDef<AttemptOverview>[] = [
     },
     {
         id: "actions",
-        cell: ({row}) => {
+        header: "Actions",
+        cell: ({ row }) => {
             const attempt = row.original;
-            // eslint-disable-next-line react-hooks/rules-of-hooks
             const router = useRouter();
 
             return (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4"/>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuSeparator/>
-                        <DropdownMenuItem onClick={() => router.push(`/quizzes/${attempt.id}`)}>Go to quiz</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => router.push(`/attempts/${attempt.id}`)}>Attempt Quiz</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/quizzes/${attempt.id}`);
+                    }}
+                >
+                    Quiz Details
+                </Button>
             )
         }
     }
 ]
-
-

@@ -62,7 +62,7 @@ function AttemptReviewPage({ params }: PageProps) {
         ))}
       </div>
 
-      <Button onClick={() => router.push('/quizzes')}>Back to Quizzes</Button>
+      <Button onClick={() => router.push('/dashboard')}>Back to Quizzes</Button>
     </div>
   );
 }

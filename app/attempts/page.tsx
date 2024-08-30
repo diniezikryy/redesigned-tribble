@@ -10,30 +10,6 @@ import {Attempt, columns} from "./columns"
 import {DataTable} from "@/app/attempts/data-table";
 
 
-// export interface QuizAttempt {
-//   id: number;
-//   user: User;
-//   quiz: Quiz;
-//   startTime: Date;
-//   endTime: Date | null;
-//   score: number | null;
-// }
-
-// const mockData = [
-//     {
-//         id: 1,
-//         quizTitle: "Test Quiz 1",
-//         attempts: 2,
-//         highestScore: 100
-//     },
-//     {
-//         id: 2,
-//         quizTitle: "Test Quiz 2",
-//         attempts: 1,
-//         highestScore: 66
-//     }
-// ]
-
 type AO = AttemptOverview[];
 
 function AttemptsPage() {
@@ -44,42 +20,7 @@ function AttemptsPage() {
 
   const [attemptOverview, setAttemptOverview] = useState<AO>([]);
 
-  // useEffect(() => {
-  //   async function fetchData() {
-  //     try {
-  //       const [quizzesData, attemptsData] = await Promise.all([
-  //         fetchQuizzes(),
-  //         fetchAttempts()
-  //       ])
-  //
-  //       setQuizzes(quizzesData)
-  //       console.log("Quizzes:", quizzesData)
-  //
-  //       const processedAttempts = processAttempts(attemptsData, quizzesData)
-  //       setAttempts(processedAttempts)
-  //       console.log('Processed Attempts:', processedAttempts)
-  //     } catch (error) {
-  //       console.error('Failed to fetch data', error)
-  //       setError('Failed to fetch data. Please try again.')
-  //     } finally {
-  //       setLoading(false)
-  //     }
-  //   }
-  //
-  //   fetchData()
-  // }, [])
-
-  // function processAttempts(rawAttempts: any[], quizzes: Quiz[]): Attempt[] {
-  //   return rawAttempts.map(attempt => {
-  //     const quiz = quizzes.find(q => q.id == attempt.quiz)
-  //     return {
-  //       id: attempt.id,
-  //       quizTitle: quiz?.title || 'Unknown Quiz',
-  //       attempts: 1, // This is to be hardcoded, consider if this should be dynamic
-  //       highestScore: attempt.score || 0,
-  //     }
-  //   })
-  // }
+  // TODO - Fetch all the attempts related to the quiz and display them.
 
   useEffect(() => {
     async function fetchData() {
