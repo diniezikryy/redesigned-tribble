@@ -54,7 +54,7 @@ const Header = () => {
                     <div className={`flex`}>
                         <Button asChild variant={`ghost`}>
                             <NextLink href="/" className="text-xl font-bold">
-                                3.3 GPA
+                                3.4 GPA
                             </NextLink>
                         </Button>
 
