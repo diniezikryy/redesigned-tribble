@@ -403,14 +403,15 @@ export const generateQuestions = async (
   return responseData.questions || [];
 };
 
-export const fetchTempQuestionsByQuiz = async (quizId: number): Promise<any> => {
+export const fetchTempQuestionsByQuiz = async (quizId: number): Promise<{ questions: Question[] }> => {
   const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/temp_questions/`);
 
   if (!response.ok) {
     throw new Error("Failed to fetch temp questions");
   }
 
-  return response.json();
+  const questions = await response.json();
+  return questions;
 }
 
 export const addSelectedQuestions = async (quizId: number, questionIds: number[]) => {
