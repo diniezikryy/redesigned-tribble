@@ -135,11 +135,17 @@ function QuizDetailPage({params}: PageProps) {
   const handleFileUpload = async (file: File) => {
     setIsGeneratingQuestions(true);
     try {
+      // Add console.log to debug
+      console.log('Uploading file for quiz:', quizId);
+      
       const generatedQuestions = await generateQuestions(quizId, file);
       console.log("Generated questions:", generatedQuestions);
-      router.push(
-        `/quizzes/${quizId}/review-questions`
-      );
+      
+      if (generatedQuestions && generatedQuestions.length > 0) {
+        router.push(`/quizzes/${quizId}/review-questions`);
+      } else {
+        setError("No questions were generated. Please try again.");
+      }
     } catch (error) {
       console.error("Error generating questions:", error);
       setError("Failed to generate questions. Please try again.");

@@ -54,8 +54,8 @@ const Header = () => {
         <div className="flex items-center">
           <div className={`flex`}>
             <Button asChild variant={`ghost`}>
-              <NextLink href="/" className="text-xl font-bold">
-                3.49 GPA
+              <NextLink href="/dashboard" className="text-xl font-bold">
+                Autoquiz
               </NextLink>
             </Button>
 

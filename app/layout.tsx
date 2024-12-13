@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "lazy-quizzes",
-  description: "use ai to generate quizzes u lazy fuck",
+  description: "use ai to generate quizzes",
 };
 
 export default function RootLayout({
