@@ -40,10 +40,10 @@ export default function LoginPage() {
                 <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
                     <span
                         className="bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 text-transparent bg-clip-text">
-                        Quiz-Rizz
+                        Autoquiz
                     </span>
                 </h1>
-                <p className="mt-2 text-xl text-muted-foreground">Rizz up kids with extraordinary AI-generated quizzes</p>
+                <p className="mt-2 text-xl text-muted-foreground">Help your learning with AI-generated quizzes</p>
             </div>
             <Card className="w-full max-w-md">
                 <CardHeader className="space-y-1">
@@ -78,7 +78,7 @@ export default function LoginPage() {
                 </CardContent>
                 <CardFooter className="flex justify-center">
                     <p className="text-sm text-muted-foreground">
-                        New to Quiz-Rizz? <a href="#" className="text-primary hover:underline">Create an account</a>
+                        New to Autoquiz? <a href="#" className="text-primary hover:underline">Create an account</a>
                     </p>
                 </CardFooter>
             </Card>

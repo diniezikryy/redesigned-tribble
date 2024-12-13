@@ -3,15 +3,16 @@
 "use client";
 
 import withAuth from "@/components/hoc/withAuth";
-import { useState, useEffect } from "react";
+import {useState, useEffect} from "react";
 import {
   createQuestion,
   deleteQuestion,
   deleteQuiz,
   fetchQuiz,
+  generateQuestions,
 } from "@/lib/api";
-import { Quiz, Question } from "@/types";
-import { EditQuizDialog } from "@/components/EditQuizDialog";
+import {Quiz, Question} from "@/types";
+import {EditQuizDialog} from "@/components/EditQuizDialog";
 import {
   Card,
   CardContent,
@@ -19,8 +20,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import {Button} from "@/components/ui/button";
+import {useRouter} from "next/navigation";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,6 +44,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import EditQuestion from "@/components/EditQuestion";
+import FileUploadDialog from "@/components/FileUploadDialog";
 
 interface PageProps {
   params: {
@@ -50,8 +52,7 @@ interface PageProps {
   };
 }
 
-function QuizDetailPage({ params }: PageProps) {
-  // State management for the quiz details and UI control
+function QuizDetailPage({params}: PageProps) {
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,12 +61,12 @@ function QuizDetailPage({ params }: PageProps) {
   const [editingQuestionId, setEditingQuestionId] = useState<number | null>(
     null
   );
+  const [isFileUploadDialogOpen, setIsFileUploadDialogOpen] = useState(false);
+  const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
 
   const router = useRouter();
   const quizId = parseInt(params.quizId, 10);
 
-  // Fetch quiz data from the API
-  // This function is called on component mount and after certain operations
   const fetchQuizData = async () => {
     try {
       const result = await fetchQuiz(quizId);
@@ -78,46 +79,38 @@ function QuizDetailPage({ params }: PageProps) {
     }
   };
 
-  // Effect to fetch quiz data on component mount
   useEffect(() => {
     fetchQuizData();
   }, []);
 
-  // Handle quiz deletion
-  // This function is called when the user confirms deletion in the AlertDialog
   const handleDeleteQuiz = async () => {
     if (!quiz) return;
     try {
       await deleteQuiz(quizId);
-      router.push("/dashboard"); // Redirect to dashboard after successful deletion
+      router.push("/dashboard");
     } catch (error) {
       console.error("Failed to delete quiz", error);
       setError("Failed to delete quiz. Please try again.");
     }
   };
 
-  // Handle quiz update
-  // This function is called after the quiz is updated in the EditQuizDialog
   const handleQuizUpdated = async () => {
     await fetchQuizData();
   };
 
-  // Handle adding new questions
-  // This function is called when the MultiQuestionForm is submitted
   const handleAddQuestions = async (questions: Omit<Question, "id">[]) => {
     try {
       for (const question of questions) {
         await createQuestion(quizId, question);
       }
-      await fetchQuizData(); // Refresh quiz data after adding questions
-      setIsAddQuestionDialogOpen(false); // Close the dialog
+      await fetchQuizData();
+      setIsAddQuestionDialogOpen(false);
     } catch (error) {
       console.error("Failed to add questions", error);
       setError("Failed to add questions. Please try again.");
     }
   };
 
-  // Handle deleting a question
   const handleDeleteQuestion = async (questionId: number) => {
     try {
       await deleteQuestion(quizId, questionId);
@@ -134,25 +127,44 @@ function QuizDetailPage({ params }: PageProps) {
     }
   };
 
-  // Handle updating a question
   const handleQuestionUpdated = async () => {
     await fetchQuizData();
-    setEditingQuestionId(null); // Exit edit mode
+    setEditingQuestionId(null);
   };
 
-  // Render loading state
+  const handleFileUpload = async (file: File) => {
+    setIsGeneratingQuestions(true);
+    try {
+      // Add console.log to debug
+      console.log('Uploading file for quiz:', quizId);
+      
+      const generatedQuestions = await generateQuestions(quizId, file);
+      console.log("Generated questions:", generatedQuestions);
+      
+      if (generatedQuestions && generatedQuestions.length > 0) {
+        router.push(`/quizzes/${quizId}/review-questions`);
+      } else {
+        setError("No questions were generated. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error generating questions:", error);
+      setError("Failed to generate questions. Please try again.");
+    } finally {
+      setIsGeneratingQuestions(false);
+      setIsFileUploadDialogOpen(false);
+    }
+  };
+
   if (loading) {
-    return <Loading message="Fetching quiz details" />;
+    return <Loading message="Fetching quiz details"/>;
   }
 
-  // Render error state
   if (error) {
-    return <ErrorAlert message={error} />;
+    return <ErrorAlert message={error}/>;
   }
 
-  // Early return if quiz is null
   if (!quiz) {
-    return <ErrorAlert message={"No quiz data available."} />;
+    return <ErrorAlert message={"No quiz data available."}/>;
   }
 
   return (
@@ -164,20 +176,36 @@ function QuizDetailPage({ params }: PageProps) {
         </h2>
 
         <div className="flex ml-auto">
+          <Button
+            variant="outline"
+            onClick={() => setIsFileUploadDialogOpen(true)}
+          >
+            Generate Questions
+          </Button>
+
+          <FileUploadDialog
+            isOpen={isFileUploadDialogOpen}
+            onClose={() => setIsFileUploadDialogOpen(false)}
+            onFileUpload={handleFileUpload}
+            isLoading={isGeneratingQuestions}
+          />
+
           {/* Add Question Dialog */}
           <Dialog
             open={isAddQuestionDialogOpen}
             onOpenChange={setIsAddQuestionDialogOpen}
           >
             <DialogTrigger asChild>
-              <Button variant="outline">Add Questions +</Button>
+              <Button variant="outline" className="ml-2">
+                Add Questions +
+              </Button>
             </DialogTrigger>
             <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col">
               <DialogHeader>
                 <DialogTitle>Add New Questions</DialogTitle>
               </DialogHeader>
               <div className="flex-grow overflow-y-auto pr-4">
-                <MultiQuestionForm onSubmit={handleAddQuestions} />
+                <MultiQuestionForm onSubmit={handleAddQuestions}/>
               </div>
             </DialogContent>
           </Dialog>
@@ -185,7 +213,9 @@ function QuizDetailPage({ params }: PageProps) {
           <Button className="ml-2" variant="outline">
             Attempt Quiz
           </Button>
-          <EditQuizDialog quiz={quiz} onQuizUpdated={handleQuizUpdated} />
+
+          <EditQuizDialog quiz={quiz} onQuizUpdated={handleQuizUpdated}/>
+
           {/* Delete Quiz Dialog */}
           <AlertDialog
             open={isDeleteDialogOpen}

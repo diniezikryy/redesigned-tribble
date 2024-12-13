@@ -1,17 +1,28 @@
-import {AttemptOverview, AttemptResult, AuthData, Question, Quiz, QuizAttempt} from "@/types";
+/** @format */
+
+import {
+  AttemptOverview,
+  AttemptResult,
+  AuthData,
+  Question,
+  Quiz,
+  QuizAttempt,
+} from "@/types";
 import {Attempt} from "@/app/attempts/columns";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-
-export const login = async (username: string, password: string): Promise<void> => {
+export const login = async (
+  username: string,
+  password: string
+): Promise<void> => {
   const response = await fetch(`${API_URL}/users/token/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({username, password}),
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
@@ -25,18 +36,18 @@ export const login = async (username: string, password: string): Promise<void> =
 export const logout = async () => {
   const response = await fetch(`${API_URL}/users/logout/`, {
     method: "POST",
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (!response.ok) {
-    throw new Error("Logout failed")
+    throw new Error("Logout failed");
   }
-}
+};
 
 export const refreshToken = async (): Promise<void> => {
   const response = await fetch(`${API_URL}/users/token/refresh/`, {
     method: "POST",
-    credentials: 'include', // This is crucial for including cookies
+    credentials: "include", // This is crucial for including cookies
   });
 
   if (!response.ok) {
@@ -51,13 +62,13 @@ export const checkAuth = async (): Promise<AuthData> => {
   if (!response.ok) {
     throw new Error("Auth check failed");
   }
-  return response.json()
+  return response.json();
 };
 
 export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
   let response = await fetch(url, {
     ...options,
-    credentials: 'include',
+    credentials: "include",
   });
 
   if (response.status === 401) {
@@ -67,7 +78,7 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
       // Retry the original request
       response = await fetch(url, {
         ...options,
-        credentials: 'include',
+        credentials: "include",
       });
     } catch (error) {
       throw new Error("Auth failed");
@@ -82,146 +93,187 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
 export const fetchQuizzes = async () => {
   const response = await fetchWithAuth(`${API_URL}/quizzes/`);
   if (!response.ok) {
-    throw new Error('Failed to fetch quizzes');
+    throw new Error("Failed to fetch quizzes");
   }
   return response.json();
 };
 
-export const createQuiz = async (quizData: { title: string; description: string }): Promise<Quiz> => {
+export const createQuiz = async (quizData: {
+  title: string;
+  description: string;
+}): Promise<Quiz> => {
   const response = await fetchWithAuth(`${API_URL}/quizzes/`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(quizData),
   });
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.detail || 'Failed to create quiz');
+    throw new Error(errorData.detail || "Failed to create quiz");
   }
   const result = await response.json();
   console.log(result);
   return result;
-}
+};
 
 export const fetchQuiz = async (quizId: number): Promise<Quiz> => {
   const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/`, {
-    method: 'GET',
+    method: "GET",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
   });
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.detail || 'Failed to fetch quiz');
+    throw new Error(errorData.detail || "Failed to fetch quiz");
   }
   return response.json();
-}
+};
 
 export const deleteQuiz = async (quizId: number): Promise<void> => {
   const response = await fetch(`${API_URL}/quizzes/${quizId}/`, {
-    method: 'DELETE',
-    credentials: 'include',
-  })
+    method: "DELETE",
+    credentials: "include",
+  });
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.detail || 'Failed to delete quiz');
+    throw new Error(errorData.detail || "Failed to delete quiz");
   }
   return;
-}
+};
 
-export const updateQuiz = async (quizId: number, quizData: { title: string; description: string }): Promise<Quiz> => {
+export const updateQuiz = async (
+  quizId: number,
+  quizData: { title: string; description: string }
+): Promise<Quiz> => {
   const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/`, {
-    method: 'PUT',
+    method: "PUT",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(quizData),
   });
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.detail || 'Failed to update quiz');
+    throw new Error(errorData.detail || "Failed to update quiz");
   }
   return response.json();
-}
+};
 
 // Questions & Answers
-export const createQuestion = async (quizId: number, questionData: Omit<Question, 'id'>): Promise<Question> => {
+export const createQuestion = async (
+  quizId: number,
+  questionData: Omit<Question, "id">
+): Promise<Question> => {
   // console.log(questionData)
-  const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/questions/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(questionData),
-  });
+  const response = await fetchWithAuth(
+    `${API_URL}/quizzes/${quizId}/questions/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(questionData),
+    }
+  );
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.detail || 'Failed to create question');
+    throw new Error(errorData.detail || "Failed to create question");
   }
 
   return response.json();
 };
 
-export const fetchAllQuestions = async (quizId: number): Promise<Question[]> => {
-  const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/questions/`)
+export const fetchAllQuestions = async (
+  quizId: number
+): Promise<Question[]> => {
+  const response = await fetchWithAuth(
+    `${API_URL}/quizzes/${quizId}/questions/`
+  );
 
   if (!response.ok) {
     throw new Error(`Failed to fetch all questions for quizId: ${quizId}`);
   }
 
   return response.json();
-}
+};
 
-export const fetchQuestion = async (quizId: number, questionId: number): Promise<Question> => {
-  const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/questions/${questionId}/`);
+export const fetchQuestion = async (
+  quizId: number,
+  questionId: number
+): Promise<Question> => {
+  const response = await fetchWithAuth(
+    `${API_URL}/quizzes/${quizId}/questions/${questionId}/`
+  );
 
   if (!response.ok) {
-    throw new Error('Failed to fetch question')
+    throw new Error("Failed to fetch question");
   }
 
   return response.json();
-}
+};
 
-export const deleteQuestion = async (quizId: number, questionId: number): Promise<void> => {
-  const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/questions/${questionId}`, {
-    method: 'DELETE',
-  })
+export const deleteQuestion = async (
+  quizId: number,
+  questionId: number
+): Promise<void> => {
+  const response = await fetchWithAuth(
+    `${API_URL}/quizzes/${quizId}/questions/${questionId}`,
+    {
+      method: "DELETE",
+    }
+  );
 
   if (!response.ok) {
-    throw new Error('Failed to delete quiz');
+    throw new Error("Failed to delete quiz");
   }
-}
+};
 
-export const deleteAnswer = async (quizId: number, questionId: number, answerId: number): Promise<void> => {
-  const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/questions/${questionId}/answers/${answerId}/`, {
-    method: 'DELETE',
-  });
+export const deleteAnswer = async (
+  quizId: number,
+  questionId: number,
+  answerId: number
+): Promise<void> => {
+  const response = await fetchWithAuth(
+    `${API_URL}/quizzes/${quizId}/questions/${questionId}/answers/${answerId}/`,
+    {
+      method: "DELETE",
+    }
+  );
 
   if (!response.ok) {
-    throw new Error('Failed to delete answer');
+    throw new Error("Failed to delete answer");
   }
-}
+};
 
-export const updateQuestion = async (quizId: number, questionId: number, questionData: Partial<Question>): Promise<Question> => {
-  const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/questions/${questionId}/`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      ...questionData,
-      answers: questionData.answers?.map(answer => ({
-        ...answer,
-        id: answer.id && answer.id > 0 ? answer.id : undefined
-      }))
-    }),
-  });
+export const updateQuestion = async (
+  quizId: number,
+  questionId: number,
+  questionData: Partial<Question>
+): Promise<Question> => {
+  const response = await fetchWithAuth(
+    `${API_URL}/quizzes/${quizId}/questions/${questionId}/`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ...questionData,
+        answers: questionData.answers?.map((answer) => ({
+          ...answer,
+          id: answer.id && answer.id > 0 ? answer.id : undefined,
+        })),
+      }),
+    }
+  );
 
   if (!response.ok) {
-    throw new Error('Failed to update question');
+    throw new Error("Failed to update question");
   }
 
   return response.json();
@@ -232,83 +284,148 @@ export const createAttempt = async (quizId: number): Promise<Attempt> => {
   const response = await fetchWithAuth(`${API_URL}/attempts/`, {
     method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       quiz: quizId,
-    })
-  })
+    }),
+  });
 
   if (!response.ok) {
-    throw new Error('Failed to create attempt instance');
+    throw new Error("Failed to create attempt instance");
   }
 
   return response.json();
-}
+};
 
 export const fetchAttempts = async (): Promise<QuizAttempt[]> => {
   const response = await fetchWithAuth(`${API_URL}/attempts/`);
 
   if (!response.ok) {
-    throw new Error('Failed to fetch attempts');
+    throw new Error("Failed to fetch attempts");
   }
   return response.json();
-}
+};
 
 export const fetchAttempt = async (attemptId: number): Promise<Attempt> => {
   const response = await fetchWithAuth(`${API_URL}/attempts/${attemptId}`);
 
   if (!response.ok) {
-    throw new Error('Failed to fetch attempt');
+    throw new Error("Failed to fetch attempt");
   }
   return response.json();
-}
+};
 
-export const fetchAttemptsByQuiz = async (quizId: number): Promise<AttemptResult[]> => {
-  const response = await fetchWithAuth(`${API_URL}/attempts/?quiz_id=${quizId}`);
+export const fetchAttemptsByQuiz = async (
+  quizId: number
+): Promise<AttemptResult[]> => {
+  const response = await fetchWithAuth(
+    `${API_URL}/attempts/?quiz_id=${quizId}`
+  );
 
   if (!response.ok) {
     throw new Error(`Failed to fetch attempts for quizId: ${quizId}`);
   }
   return response.json();
-}
+};
 
 export const fetchAttemptsOverview = async (): Promise<AttemptOverview[]> => {
   const response = await fetchWithAuth(`${API_URL}/attempts/overview`);
 
   if (!response.ok) {
-    throw new Error('Failed to fetch attempt overview');
+    throw new Error("Failed to fetch attempt overview");
   }
   return response.json();
-}
+};
 
-export const submitAttempt = async (attemptId: number, answers: { question: number, selected_answer: number }[]) => {
-  console.log(JSON.stringify({ answers }));
-  const response = await fetchWithAuth(`${API_URL}/attempts/${attemptId}/submit/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ answers }),
-  });
+export const submitAttempt = async (
+  attemptId: number,
+  answers: { question: number; selected_answer: number }[]
+) => {
+  console.log(JSON.stringify({answers}));
+  const response = await fetchWithAuth(
+    `${API_URL}/attempts/${attemptId}/submit/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({answers}),
+    }
+  );
 
   const data = await response.json();
 
   if (!response.ok) {
     // Throw an error with the detail message from the API
-    throw new Error(data.detail || 'Failed to submit quiz attempt');
+    throw new Error(data.detail || "Failed to submit quiz attempt");
   }
 
   return data;
 };
 
-
-export const fetchAttemptResult = async (attemptId: number): Promise<AttemptResult> => {
+export const fetchAttemptResult = async (
+  attemptId: number
+): Promise<AttemptResult> => {
   const response = await fetchWithAuth(`${API_URL}/attempts/${attemptId}/`);
   if (!response.ok) {
-    throw new Error('Failed to fetch attempt result');
+    throw new Error("Failed to fetch attempt result");
   }
   return response.json();
 };
 
+// upload pdf and generate questions endpoint
+export const generateQuestions = async (
+  quizId: number,
+  file: File
+): Promise<Question[]> => {
+  const formData = new FormData();
+  formData.append("pdf", file);
 
+  const response = await fetchWithAuth(
+    `${API_URL}/quizzes/${quizId}/upload_pdf/`,
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+
+  console.log("Response status:", response.status);
+  console.log("Response headers:", response.headers);
+
+  const responseData = await response.json();
+  console.log("Response data:", responseData);
+
+  if (!response.ok) {
+    throw new Error(responseData.detail || "Failed to generate questions");
+  }
+
+  return responseData.questions || [];
+};
+
+export const fetchTempQuestionsByQuiz = async (quizId: number): Promise<{ questions: Question[] }> => {
+  const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/temp_questions/`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch temp questions");
+  }
+
+  const questions = await response.json();
+  return questions;
+}
+
+export const addSelectedQuestions = async (quizId: number, questionIds: number[]) => {
+  const response = await fetchWithAuth(`${API_URL}/quizzes/${quizId}/add_selected_questions/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ question_ids: questionIds }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to add selected questions');
+  }
+
+  return response.json();
+};
