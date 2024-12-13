@@ -1,1 +1,1 @@
-# quiz-rizz frontend
+autoquiz frontend
